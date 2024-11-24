@@ -46,5 +46,3 @@ To build on this project, Swire Coca-Cola should consider:
 1. Implementing real-time machine age tracking to better capture the lifecycle of equipment.  
 2. Establishing processes for root cause analysis of minor breakdowns to prevent escalation into major issues.  
 3. Deploying the predictive models into production to continuously monitor and flag high-risk machines for targeted maintenance.
-
-This project demonstrates the value of predictive maintenance in mitigating machine downtime and driving operational efficiency for Swire Coca-Cola. For more details, refer to the [Capstone Presentation](path/to/Capstone.pdf).
