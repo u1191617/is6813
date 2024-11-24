@@ -1,0 +1,199 @@
+---
+title: "IS 6813 EDA"
+author: "Hunter Nilsen"
+date: "`r Sys.Date()`"
+output: 
+  html_document: 
+    toc: yes
+    highlight: espresso
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load the Data
+
+```{r}
+# Load the CSV file
+data <- read.csv("IWC_Work_Orders_Extract.csv", stringsAsFactors = FALSE)
+```
+
+## Load Packages
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(VIM)
+library(corrplot)
+library(GGally)
+library(factoextra)
+```
+
+## Explore the Data
+
+```{r}
+# View the first few rows of the dataset
+head(data)
+
+# Get an overview of the dataset
+str(data)
+
+# Summary statistics for numeric columns
+summary(data)
+```
+
+## Data Cleaning
+
+```{r}
+# Convert the columns to Date format
+data$EXECUTION_START_DATE <- as.Date(data$EXECUTION_START_DATE, format="%m/%d/%Y")
+data$EXECUTION_FINISH_DATE <- as.Date(data$EXECUTION_FINISH_DATE, format="%m/%d/%Y")
+```
+
+## Summaries and Plots
+
+```{r}
+# Histogram of actual work in minutes
+hist(data$ACTUAL_WORK_IN_MINUTES, main="Distribution of Downtime", xlab="Downtime (minutes)", breaks=20)
+```
+
+```{r}
+# Boxplot of downtime by plant
+boxplot(ACTUAL_WORK_IN_MINUTES ~ PLANT_ID, data=data, main="Downtime by Plant", xlab="Plant", ylab="Downtime (minutes)")
+```
+
+```{r}
+# Barplot for the frequency of Maintenance Activity Types (planned vs unplanned)
+barplot(table(data$MAINTENANCE_ACTIVITY_TYPE), main="Maintenance Activity Type", ylab="Frequency", xlab="Type")
+```
+
+## Missing Data
+
+```{r}
+# Visualize missing data patterns
+aggr(data, col=c('navyblue','red'), numbers=TRUE, sortVars=TRUE, labels=names(data), cex.axis=.7, gap=3, ylab=c("Missing data","Pattern"))
+```
+
+```{r}
+# Calculate percentage of missing data per column
+missing_percent <- colSums(is.na(data)) / nrow(data) * 100
+print(missing_percent)
+```
+
+## Correllation Analysis
+
+```{r}
+# Subset numeric columns
+numeric_data <- data[, sapply(data, is.numeric)]
+
+# Correlation matrix
+cor_matrix <- cor(numeric_data, use="complete.obs")
+print(cor_matrix)
+
+# Visualize the correlation matrix using corrplot
+
+corrplot(cor_matrix, method = "circle")
+```
+
+## Categorical Variable Analysis
+
+```{r}
+# Summarize downtime by Maintenance Type
+downtime_by_type <- aggregate(ACTUAL_WORK_IN_MINUTES ~ MAINTENANCE_TYPE_DESCRIPTION, data, sum)
+
+# Barplot of total downtime by maintenance type
+barplot(downtime_by_type$ACTUAL_WORK_IN_MINUTES, names.arg = downtime_by_type$MAINTENANCE_TYPE_DESCRIPTION, las=2, main="Downtime by Maintenance Type", ylab="Downtime (Minutes)")
+```
+
+```{r}
+# Boxplot of downtime for different maintenance types
+ggplot(data, aes(x=MAINTENANCE_TYPE_DESCRIPTION, y=ACTUAL_WORK_IN_MINUTES)) +
+  geom_boxplot() +
+  labs(title="Downtime by Maintenance Type", x="Maintenance Type", y="Downtime (Minutes)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Outlier Detection
+
+```{r}
+# Boxplot to detect outliers in downtime
+boxplot(data$ACTUAL_WORK_IN_MINUTES, main="Boxplot for Downtime", ylab="Downtime (Minutes)")
+```
+
+```{r}
+# Detect outliers using Z-scores
+z_scores <- scale(data$ACTUAL_WORK_IN_MINUTES)
+outliers <- which(abs(z_scores) > 3)
+print(outliers)
+```
+
+```{r}
+# Detect outliers using Z-scores
+z_scores <- scale(data$ACTUAL_WORK_IN_MINUTES)
+outliers <- which(abs(z_scores) > 3)
+print(outliers)
+```
+
+## Pairwise Relationships
+
+```{r}
+# Pairwise scatter plot matrix
+
+
+ggpairs(numeric_data)
+```
+
+## Feature Engineering
+
+```{r}
+# Example: Create a new feature "Downtime Category"
+data$downtime_category <- cut(data$ACTUAL_WORK_IN_MINUTES, breaks=c(0, 60, 120, 180, Inf), labels=c("Short", "Medium", "Long", "Very Long"))
+
+# Check the distribution of this new feature
+table(data$downtime_category)
+```
+
+## Cross Tabulation
+
+```{r}
+# Cross-tabulation of maintenance type and functional location
+table(data$MAINTENANCE_TYPE_DESCRIPTION, data$FUNCTIONAL_LOC)
+```
+
+## Heatmaps
+
+```{r}
+# Install and load necessary packages
+install.packages("ggplot2")
+install.packages("reshape2")
+
+# Create a heatmap
+library(ggplot2)
+library(reshape2)
+cor_data <- cor(numeric_data, use = "complete.obs")
+melted_cor_data <- melt(cor_data)
+
+ggplot(data = melted_cor_data, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile() +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0, limit = c(-1,1), space = "Lab", name="Correlation") +
+  theme_minimal() +
+  labs(title="Correlation Heatmap", x="", y="")
+```
+
+## Correlations
+
+```{r}
+# Subset numeric columns
+numeric_data <- data[, sapply(data, is.numeric)]
+
+# Check the first few rows of the numeric data
+head(numeric_data)
+```
+
+```{r}
+# Compute correlation matrix
+cor_matrix <- cor(numeric_data, use="complete.obs")
+print(cor_matrix)
+```
+
