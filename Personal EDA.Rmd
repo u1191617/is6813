@@ -43,6 +43,8 @@ str(data)
 summary(data)
 ```
 
+This step gives an initial glimpse of the dataset, including the first few rows, data types, and summary statistics. This helps understand the data distribution and identify potential missing or erroneous values.
+
 ## Data Cleaning
 
 ```{r}
@@ -51,6 +53,8 @@ data$EXECUTION_START_DATE <- as.Date(data$EXECUTION_START_DATE, format="%m/%d/%Y
 data$EXECUTION_FINISH_DATE <- as.Date(data$EXECUTION_FINISH_DATE, format="%m/%d/%Y")
 ```
 
+Dates are converted to the correct Date format for proper handling in time-series analysis and other date-related operations.
+
 ## Summaries and Plots
 
 ```{r}
@@ -58,15 +62,21 @@ data$EXECUTION_FINISH_DATE <- as.Date(data$EXECUTION_FINISH_DATE, format="%m/%d/
 hist(data$ACTUAL_WORK_IN_MINUTES, main="Distribution of Downtime", xlab="Downtime (minutes)", breaks=20)
 ```
 
+The histogram provides a visualization of downtime distribution. This helps identify skewness, common downtime ranges, and outliers.
+
 ```{r}
 # Boxplot of downtime by plant
 boxplot(ACTUAL_WORK_IN_MINUTES ~ PLANT_ID, data=data, main="Downtime by Plant", xlab="Plant", ylab="Downtime (minutes)")
 ```
 
+The boxplot compares downtime distributions across different plants, highlighting variability and potential outliers in specific locations.
+
 ```{r}
 # Barplot for the frequency of Maintenance Activity Types (planned vs unplanned)
 barplot(table(data$MAINTENANCE_ACTIVITY_TYPE), main="Maintenance Activity Type", ylab="Frequency", xlab="Type")
 ```
+
+The barplot shows the frequency of planned versus unplanned maintenance activities, which can inform maintenance planning strategies.
 
 ## Missing Data
 
@@ -75,11 +85,15 @@ barplot(table(data$MAINTENANCE_ACTIVITY_TYPE), main="Maintenance Activity Type",
 aggr(data, col=c('navyblue','red'), numbers=TRUE, sortVars=TRUE, labels=names(data), cex.axis=.7, gap=3, ylab=c("Missing data","Pattern"))
 ```
 
+This visualization highlights patterns of missing data, aiding decisions on data imputation or removal of columns/rows.
+
 ```{r}
 # Calculate percentage of missing data per column
 missing_percent <- colSums(is.na(data)) / nrow(data) * 100
 print(missing_percent)
 ```
+
+The percentage of missing data per column is calculated to understand the extent of missingness and decide on the appropriate treatment.
 
 ## Correllation Analysis
 
@@ -96,6 +110,8 @@ print(cor_matrix)
 corrplot(cor_matrix, method = "circle")
 ```
 
+The correlation matrix and its visualization help identify relationships between numeric variables. Strong correlations might indicate redundant variables or potential predictors.
+
 ## Categorical Variable Analysis
 
 ```{r}
@@ -106,6 +122,8 @@ downtime_by_type <- aggregate(ACTUAL_WORK_IN_MINUTES ~ MAINTENANCE_TYPE_DESCRIPT
 barplot(downtime_by_type$ACTUAL_WORK_IN_MINUTES, names.arg = downtime_by_type$MAINTENANCE_TYPE_DESCRIPTION, las=2, main="Downtime by Maintenance Type", ylab="Downtime (Minutes)")
 ```
 
+The total downtime is summarized by maintenance type, providing insights into which types of maintenance consume the most time.
+
 ```{r}
 # Boxplot of downtime for different maintenance types
 ggplot(data, aes(x=MAINTENANCE_TYPE_DESCRIPTION, y=ACTUAL_WORK_IN_MINUTES)) +
@@ -114,6 +132,8 @@ ggplot(data, aes(x=MAINTENANCE_TYPE_DESCRIPTION, y=ACTUAL_WORK_IN_MINUTES)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+This boxplot highlights downtime variability within each maintenance type, showing the spread and potential outliers.
+
 ## Outlier Detection
 
 ```{r}
@@ -121,12 +141,7 @@ ggplot(data, aes(x=MAINTENANCE_TYPE_DESCRIPTION, y=ACTUAL_WORK_IN_MINUTES)) +
 boxplot(data$ACTUAL_WORK_IN_MINUTES, main="Boxplot for Downtime", ylab="Downtime (Minutes)")
 ```
 
-```{r}
-# Detect outliers using Z-scores
-z_scores <- scale(data$ACTUAL_WORK_IN_MINUTES)
-outliers <- which(abs(z_scores) > 3)
-print(outliers)
-```
+The boxplot provides a simple way to identify outliers in downtime data.
 
 ```{r}
 # Detect outliers using Z-scores
@@ -134,6 +149,17 @@ z_scores <- scale(data$ACTUAL_WORK_IN_MINUTES)
 outliers <- which(abs(z_scores) > 3)
 print(outliers)
 ```
+
+Outliers are detected using Z-scores, which highlight extreme values beyond three standard deviations from the mean.
+
+```{r}
+# Detect outliers using Z-scores
+z_scores <- scale(data$ACTUAL_WORK_IN_MINUTES)
+outliers <- which(abs(z_scores) > 3)
+print(outliers)
+```
+
+The pairwise scatter plot matrix visualizes relationships between numeric variables, providing insights into linear or non-linear patterns.
 
 ## Pairwise Relationships
 
@@ -154,12 +180,16 @@ data$downtime_category <- cut(data$ACTUAL_WORK_IN_MINUTES, breaks=c(0, 60, 120, 
 table(data$downtime_category)
 ```
 
+A new categorical feature downtime_category is created to group downtime into meaningful categories, enabling more targeted analysis.
+
 ## Cross Tabulation
 
 ```{r}
 # Cross-tabulation of maintenance type and functional location
 table(data$MAINTENANCE_TYPE_DESCRIPTION, data$FUNCTIONAL_LOC)
 ```
+
+This cross-tabulation shows the distribution of maintenance types across different functional locations, revealing patterns or dependencies.
 
 ## Heatmaps
 
@@ -180,6 +210,8 @@ ggplot(data = melted_cor_data, aes(x=Var1, y=Var2, fill=value)) +
   theme_minimal() +
   labs(title="Correlation Heatmap", x="", y="")
 ```
+
+The heatmap provides an intuitive visualization of the correlation matrix, showing relationships between variables at a glance.
 
 ## Correlations
 
